@@ -1,7 +1,7 @@
 # STRIPE: Shape and Time diverRsIty in Probabilistic forEcasting
 [Vincent Le Guen](https://www.linkedin.com/in/vincentleguen/),  [Nicolas Thome](http://cedric.cnam.fr/~thomen/)
 
-Code for our NeurIPS 20120 paper "Probabilistic Time Series Forecasting with Structured Shape and Temporal Diversity"
+Code for our NeurIPS 2020 paper "Probabilistic Time Series Forecasting with Structured Shape and Temporal Diversity"
 
 ![](https://github.com/vincent-leguen/STRIPE/blob/main/fig_stripe.png)
 
