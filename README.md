@@ -3,7 +3,7 @@
 
 Code for our NeurIPS 20120 paper "Probabilistic Time Series Forecasting with Structured Shape and Temporal Diversity"
 
-![](https://github.com/vincent-leguen/DILATE/blob/master/fig2.png)
+![](https://github.com/vincent-leguen/STRIPE/blob/master/fig_stripe.png)
 
 If you find this code useful for your research, please cite our [paper](https://papers.nips.cc/paper/2020/file/2f2b265625d76a6704b08093c652fd79-Paper.pdf):
 
