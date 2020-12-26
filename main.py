@@ -36,7 +36,7 @@ fc_units = 10
 print('STEP 1')
 model_dilate = cVAE(input_size,rnn_units,nlayers,bidirectional,latent_dim,fc_units,N_output,device).to(device)
 train_model(model_dilate,trainloader,testloader,loss_type='dilate',nsamples=10,learning_rate=0.001, 
-    device=device,epochs=1, gamma=gamma, alpha=0.5, print_every=50, eval_every=100,verbose=1)
+    device=device,epochs=501, gamma=gamma, alpha=0.5, print_every=50, eval_every=100,verbose=1)
            
 #torch.save(model_dilate.state_dict(),'save/model_dilate.pth') 
              
