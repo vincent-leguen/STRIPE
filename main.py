@@ -46,7 +46,7 @@ print('STEP 2')
 nshapes = 10
 stripe_shape = STRIPE('shape',nshapes, latent_dim, N_output, rnn_units).to(device)
 train_STRIPE(cvae=model_dilate, stripe=stripe_shape, trainloader=trainloader, testloader=testloader, device=device, mode_stripe='shape',
-    nsamples=nshapes, quality='', diversity_kernel='dtw',  learning_rate=0.001, epochs=1, print_every=2,eval_every=5, alpha=0.5)      
+    nsamples=nshapes, quality='', diversity_kernel='dtw',  learning_rate=0.001, epochs=16, print_every=2,eval_every=5, alpha=0.5)      
 #torch.save(stripe_shape.state_dict(),'save/stripe_shape.pth')     
    
    
@@ -55,7 +55,7 @@ print('STEP 3')
 ntimes = 10
 stripe_time = STRIPE_conditional('time',ntimes, latent_dim, N_output, rnn_units).to(device)
 train_STRIPE(cvae=model_dilate,stripe=stripe_time, trainloader=trainloader, testloader=testloader, device=device, mode_stripe='time',nsamples=ntimes, 
-        quality='',diversity_kernel='tdi', learning_rate=0.001, epochs=1, print_every=1,eval_every=5, alpha=0.5)
+        quality='',diversity_kernel='tdi', learning_rate=0.001, epochs=1, print_every=16,eval_every=5, alpha=0.5)
 #torch.save(stripe_time.state_dict(),'save/stripe_time.pth')                  
 
 
