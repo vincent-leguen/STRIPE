@@ -7,8 +7,8 @@ import properscoring as ps
 import time
 import random
 
-def train_model(net,trainloader,testloader,loss_type,nsamples,learning_rate, device, epochs=1000, gamma = 0.001,
-                print_every=50,eval_every=50, verbose=1, Lambda=1, alpha=0.5, regul_entropy=False, lambda_entropy=1):
+def train_model(net,trainloader,testloader,loss_type,nsamples,learning_rate, device, epochs=1000, gamma = 0.01, alpha=0.5,
+                print_every=50,eval_every=50, verbose=1):
 
     optimizer = torch.optim.Adam(net.parameters(),lr=learning_rate)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=3,factor=0.1,verbose=True)
@@ -38,19 +38,7 @@ def train_model(net,trainloader,testloader,loss_type,nsamples,learning_rate, dev
                 loss_recons = loss_dilate
             
             loss_KL = loss_kullback_leibler(z_mu, z_logvar) # Kullback-Leibler
-            loss = loss_recons + loss_KL 
-            
-            if (regul_entropy):
-                nsamples_entropy = 10
-                loss_entropy = torch.tensor([0],dtype=torch.float32).to(device)
-                #for b in range(0,batch_size):   
-                b = 0    
-                for k in range(nsamples_entropy):
-                    output_k = net.sample(inputs[b:b+1, :,:], target[b:b+1, :,:]) # output_k [1, seq_len, nfeatures]
-                    loss_entropy += criterion(output_k,target[b:b+1, :,:])    
-                        
-                loss_entropy = loss_entropy /(batch_size * nsamples_entropy)
-                loss = loss + lambda_entropy *  loss_entropy            
+            loss = loss_recons + loss_KL          
             
             optimizer.zero_grad()
             loss.backward()
@@ -72,7 +60,7 @@ def train_model(net,trainloader,testloader,loss_type,nsamples,learning_rate, dev
       
 def eval_model(net,loader,nsamples, device,gamma=0.01,mode='vae',mode_stripe='shape',stripe=None,verbose=1,nsamples_ds=10): 
     # testloader a nfutures possibles pour chaque input
-    # prendre la batch_size egale à nfuture
+    # prendre la batch_size egale Ã  nfuture
     criterion = torch.nn.MSELoss()
     losses_mse = []
     losses_dtw = []
@@ -81,7 +69,7 @@ def eval_model(net,loader,nsamples, device,gamma=0.01,mode='vae',mode_stripe='sh
     recall_mse,recall_dtw,recall_tdi,recall_dilate,precision_mse,precision_dtw,precision_tdi,precision_dilate=[],[],[],[],[],[],[],[]
     CRPS = 0
     
-    for i, data in enumerate(loader, 0):  # pour un batch, c'est le même input et nfutures differents futurs
+    for i, data in enumerate(loader, 0):  # pour un batch, c'est le mÃªme input et nfutures differents futurs
         loss_mse, loss_dtw, loss_tdi = torch.tensor(0),torch.tensor(0),torch.tensor(0)
         inputs, target = data
         inputs = torch.tensor(inputs, dtype=torch.float32).to(device)  # [nfutures, seq_len, nfeatures] 
@@ -119,40 +107,16 @@ def eval_model(net,loader,nsamples, device,gamma=0.01,mode='vae',mode_stripe='sh
             outputs = net(inputs).to(device)
             indd = random.sample(range(0,100),nsamples_ds)
             #indd = range(0,10)
-            outputs = outputs[indd ,:,:]
+            outputs = outputs[indd ,:,:]   
 
-
-        if (mode=='sampler'): # mode diverse sampler
-            output_phi, h = net.encoder.rnn_phi(inputs) # in stripe mode, 'net' is the cvae  
-            #h_penultimate = output_phi[:,-2,:] # for the decoder
-            sampled_zs = stripe_shape(h) #  sampled_zs : [batch_size, half_latent_dim * nsamples]
-            sampled_zt = stripe_time(h) #  sampled_zt : [batch_size, half_latent_dim * nsamples]
-            z_fixed = torch.randn((batch_size, stripe.half_latent_dim*nsamples), dtype=torch.float32).to(device)
-            
-            #z_fixed = torch.randn((batch_size, stripe.half_latent_dim*nsamples), dtype=torch.float32).to(device)
-            outputs = torch.zeros([nshapes*ntimes, N_output, nfeatures]  ).to(device)
-            for k in range(0,nshapes):   
-                for l in range(0,ntimes):
-                    zs = sampled_zs[:,stripe_shape.half_latent_dim*k:stripe_shape.half_latent_dim*(k+1)] # [batch_size, half_latent_dim]
-                    zt = z_fixed[:,stripe_time.half_latent_dim*l:stripe_time.half_latent_dim*(l+1)]
-                    z = torch.cat( (zs, zt), dim=1) * 3/4
-                    x_mu = net.decoder(inputs, h, z) # x_mu: [batch_size, target_length, nfeatures]    
-                    outputs[k*nshapes+l,:,:] = x_mu[0,:,:]   
-                    
-            indd = random.sample(range(0,100),nsamples_ds)
-            #indd = range(0,10)
-            outputs = outputs[indd ,:,:]
-            
-            
-
-        ########## CRPS
+        ### CRPS
         target_cpu = target.detach().cpu().numpy()
         output_cpu = outputs.detach().cpu().numpy()
         for a in range(N_output):
             CRPS += ps.crps_ensemble( target_cpu[0,a,0] , output_cpu[:,a,0])        
         
         
-        ##################### RECALL
+        ### RECALL
         recall_mse_i, recall_dtw_i, recall_tdi_i, recall_dilate_i = 0,0,0,0
         for future in range(nfutures):
             min_mse,min_dtw,min_tdi,min_dilate = float('inf'),float('inf'),float('inf'),float('inf')
@@ -173,7 +137,7 @@ def eval_model(net,loader,nsamples, device,gamma=0.01,mode='vae',mode_stripe='sh
         recall_tdi.append( recall_tdi_i / nfutures )
         recall_dilate.append( recall_dilate_i / nfutures )
         
-        ######################## PRECISION
+        ### PRECISION
         precision_mse_i, precision_dtw_i, precision_tdi_i, precision_dilate_i = 0,0,0,0
         for ind in range(nsamples):
             min_mse,min_dtw,min_tdi,min_dilate = float('inf'),float('inf'),float('inf'),float('inf')
@@ -258,7 +222,6 @@ def train_STRIPE(cvae, stripe, trainloader, testloader, device, mode_stripe, nsa
                 outputs[:,k,:,:] = x_mu
                                 
             dpp_loss = diversity_loss(outputs,target,quality,diversity_kernel,alpha,gamma,ldtw,device)
-            #print('dpp loss ',dpp_loss.item())
             loss = dpp_loss
             optimizer.zero_grad()
             loss.backward()
