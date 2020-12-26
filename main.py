@@ -63,6 +63,3 @@ train_STRIPE(cvae=model_dilate,stripe=stripe_time, trainloader=trainloader, test
 print('STEP 4')
 test_sampler = TestSampler_Sequential(model_dilate, stripe_shape, stripe_time)
 _,_ = eval_model(test_sampler, testloader,nsamples=10, device=device, gamma=0.01,mode='test_sampler')
-
-
-print('FINISH !!!')
