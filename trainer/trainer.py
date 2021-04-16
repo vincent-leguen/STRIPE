@@ -213,8 +213,7 @@ def train_STRIPE(cvae, stripe, trainloader, testloader, device, mode_stripe, nsa
                 z = sampled_z[:,stripe.half_latent_dim*k:stripe.half_latent_dim*(k+1)] # [batch_size, half_latent_dim]
                 z_f =  z_fixed[:,stripe.half_latent_dim*k:stripe.half_latent_dim*(k+1)]
                 if (mode_stripe=='shape'):
-                    #z = torch.cat( (z, z_f), dim=1)
-                    z = torch.cat( (z_f, z), dim=1)
+                    z = torch.cat( (z, z_f), dim=1)
                 else: # mode = time
                     z = torch.cat( (z_f, z), dim=1)   
                 
